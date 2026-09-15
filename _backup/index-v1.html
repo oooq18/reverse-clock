@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="反方向的钟 · 时光倒计时：听满一百遍，回到节日前。">
+<meta name="theme-color" content="#0a0814">
+<title>反方向的钟 · 时光倒计时</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23171228' stroke='%23f0c96a' stroke-width='4'/%3E%3Cpath d='M32 14v18l12 7' stroke='%23f0c96a' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23f0c96a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&display=swap">
+<style>
+:root{
+  --gold:#f0c96a;
+  --lav:#b7a4ff;
+  --ink:#0a0814;
+  --card:rgba(255,255,255,.055);
+  --line:rgba(255,255,255,.11);
+  --text:#efe9dc;
+  --muted:#a89cc2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100vh;
+  color:var(--text);
+  font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  background:
+    radial-gradient(120% 95% at 50% 26%, rgba(12,9,24,.30), rgba(10,8,20,.66) 68%, rgba(8,6,16,.86)),
+    url('assets/bg.jpg') center 28%/cover no-repeat,
+    var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.stage{
+  position:relative;z-index:2;width:100%;max-width:560px;
+  display:flex;flex-direction:column;align-items:center;
+  padding:56px 20px 44px;text-align:center;
+}
+/* ---------- 徽标 ---------- */
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.84rem;letter-spacing:.28em;color:var(--gold);
+  border:1px solid rgba(240,201,106,.35);border-radius:99px;
+  padding:7px 16px;margin-bottom:22px;
+  background:rgba(240,201,106,.06);
+  text-indent:.28em;
+}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+/* ---------- 时光唱片钟 ---------- */
+.hero{position:relative;width:min(80vw,330px);aspect-ratio:1;margin-bottom:26px}
+.vinyl{
+  position:absolute;inset:0;border-radius:50%;
+  background:repeating-radial-gradient(circle at 50% 50%, #120f1e 0 2px, #1c1830 2px 4px);
+  box-shadow:0 18px 70px rgba(0,0,0,.55), inset 0 0 46px rgba(0,0,0,.75);
+  animation:spin 16s linear infinite;
+}
+.vinyl::before{content:"";position:absolute;inset:6%;border-radius:50%;border:1px solid rgba(240,201,106,.14)}
+.vinyl::after{content:"";position:absolute;inset:12%;border-radius:50%;border:1px dashed rgba(240,201,106,.10)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.clock{
+  position:absolute;inset:22%;border-radius:50%;
+  background:radial-gradient(circle at 50% 34%, #2d2452, #161128 72%);
+  border:1px solid rgba(240,201,106,.45);
+  box-shadow:0 0 34px rgba(183,164,255,.28), inset 0 0 26px rgba(0,0,0,.6);
+}
+.clock .num{
+  position:absolute;transform:translate(-50%,-50%);
+  font-size:.92rem;color:#cfc3ec;font-family:"Noto Serif SC",serif;font-weight:600;
+}
+.hand{
+  position:absolute;left:50%;bottom:50%;
+  transform-origin:50% 100%;transform:translateX(-50%) rotate(0deg);
+  border-radius:99px;
+}
+.hand.hour{width:4px;height:19%;background:var(--gold);box-shadow:0 0 8px rgba(240,201,106,.7)}
+.hand.min{width:3px;height:29%;background:var(--lav);box-shadow:0 0 8px rgba(183,164,255,.7)}
+.hand.sec{width:2px;height:37%;background:#f2b8a0;box-shadow:0 0 8px rgba(242,184,160,.8);transition:transform 1s linear}
+.clock::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;transform:translate(-50%,-50%);border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+
+/* ---------- 标题 ---------- */
+h1{
+  font-family:"Noto Serif SC",serif;font-weight:900;
+  font-size:clamp(2rem,9vw,3.1rem);letter-spacing:.30em;text-indent:.30em;
+  color:#f5ecd6;text-shadow:0 0 26px rgba(240,201,106,.35);
+  margin-bottom:14px;line-height:1.25;
+}
+.sub{color:var(--muted);font-size:clamp(.88rem,3.6vw,1rem);letter-spacing:.14em;margin-bottom:30px}
+.sub b{color:var(--gold);font-weight:600}
+
+/* ---------- 倒计时 ---------- */
+.count-head{color:var(--muted);font-size:.92rem;letter-spacing:.2em;margin-bottom:14px}
+.count-head b{color:var(--lav);font-weight:600}
+.count{
+  display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:30px;
+}
+.card{
+  min-width:74px;padding:16px 10px 12px;border-radius:16px;
+  background:var(--card);border:1px solid var(--line);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.card .num{
+  font-size:clamp(2rem,9vw,2.9rem);font-weight:700;line-height:1;
+  font-variant-numeric:tabular-nums;
+  color:var(--gold);text-shadow:0 0 18px rgba(240,201,106,.35);
+}
+.card .lab{font-size:.84rem;color:var(--muted);letter-spacing:.3em;text-indent:.3em;margin-top:8px}
+
+/* ---------- 频谱 ---------- */
+#eq{width:100%;max-width:420px;height:60px;margin-bottom:26px;opacity:.9}
+
+/* ---------- 控制按钮 ---------- */
+.controls{display:flex;gap:18px;margin-bottom:14px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--line);border-radius:99px;
+  color:var(--text);font-size:.84rem;letter-spacing:.08em;
+  padding:9px 18px;cursor:pointer;transition:.2s;
+}
+.btn:hover{border-color:rgba(240,201,106,.55);color:var(--gold);box-shadow:0 0 16px rgba(240,201,106,.18)}
+.btn svg{width:15px;height:15px;fill:currentColor}
+.meta{color:#7d7199;font-size:.8rem;letter-spacing:.12em}
+
+/* ---------- 入场遮罩 ---------- */
+#enter{
+  position:fixed;inset:0;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  background:radial-gradient(120% 95% at 50% 26%, rgba(12,9,24,.55), rgba(10,8,20,.88)),
+    url('assets/bg.jpg') center 28%/cover no-repeat, var(--ink);
+  transition:opacity .7s ease;cursor:pointer;
+}
+#enter.gone{opacity:0;pointer-events:none}
+.enter-vinyl{width:min(46vw,190px);aspect-ratio:1;border-radius:50%;position:relative;
+  background:repeating-radial-gradient(circle at 50% 50%, #120f1e 0 2px, #1c1830 2px 4px);
+  box-shadow:0 18px 60px rgba(0,0,0,.6), inset 0 0 40px rgba(0,0,0,.7);
+  animation:spin 9s linear infinite;
+}
+.enter-vinyl::after{content:"";position:absolute;left:50%;top:50%;width:34%;height:34%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 50% 34%, #2d2452, #161128 72%);border:1px solid rgba(240,201,106,.45)}
+.enter-title{font-family:"Noto Serif SC",serif;font-weight:900;font-size:clamp(1.9rem,8vw,2.8rem);letter-spacing:.32em;text-indent:.32em;color:#f5ecd6;text-shadow:0 0 30px rgba(240,201,106,.4)}
+.enter-hint{font-size:clamp(.95rem,4vw,1.1rem);letter-spacing:.22em;color:var(--gold);animation:pulse 2.2s ease-in-out infinite}
+.enter-note{font-size:.82rem;color:#8d81ab;letter-spacing:.14em;line-height:1.9}
+.enter-note b{color:var(--lav);font-weight:600}
+
+/* ---------- 弹窗 ---------- */
+#pop{
+  position:fixed;inset:0;z-index:60;
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  background:rgba(6,5,12,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity .5s ease;
+}
+#pop.show{opacity:1;pointer-events:auto}
+.pop-card{
+  width:100%;max-width:340px;border-radius:22px;padding:34px 26px 28px;text-align:center;
+  background:linear-gradient(180deg,#1d1733,#14102a);
+  border:1px solid rgba(240,201,106,.4);
+  box-shadow:0 0 60px rgba(183,164,255,.22), inset 0 0 30px rgba(0,0,0,.4);
+  transform:translateY(14px);transition:transform .5s ease;
+}
+#pop.show .pop-card{transform:translateY(0)}
+.pop-card .crown{width:44px;height:44px;margin:0 auto 16px;border-radius:50%;background:rgba(240,201,106,.12);border:1px solid rgba(240,201,106,.35);display:flex;align-items:center;justify-content:center}
+.pop-card .crown svg{width:22px;height:22px;fill:var(--gold)}
+.pop-card h2{font-family:"Noto Serif SC",serif;font-weight:900;font-size:1.22rem;letter-spacing:.1em;color:#f5ecd6;margin-bottom:12px;line-height:1.6}
+.pop-card p{color:#b9aed6;font-size:.95rem;line-height:2;letter-spacing:.06em}
+.pop-card p b{color:var(--gold);font-weight:700;font-size:1.05rem}
+.pop-card .btn-gold{
+  margin-top:22px;display:inline-block;cursor:pointer;
+  background:linear-gradient(180deg,#f4d488,#e0ac4d);color:#241a08;
+  border:none;border-radius:99px;padding:11px 34px;
+  font-size:.95rem;letter-spacing:.18em;font-weight:700;
+  box-shadow:0 6px 22px rgba(240,201,106,.35);transition:.2s;
+}
+.pop-card .btn-gold:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(240,201,106,.45)}
+
+/* ---------- 提示 ---------- */
+#toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  z-index:70;background:rgba(29,23,51,.95);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:12px 22px;font-size:.86rem;letter-spacing:.08em;
+  opacity:0;transition:.4s;pointer-events:none;max-width:88vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+audio{display:none}
+
+@media (max-width:380px){
+  .count{gap:8px}
+  .card{min-width:64px;padding:14px 8px 10px}
+}
+@media (prefers-reduced-motion:reduce){
+  .vinyl,.enter-vinyl{animation-duration:40s}
+}
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <div class="badge">第 100 遍 · 时光逆流中</div>
+
+  <div class="hero">
+    <div class="vinyl"></div>
+    <div class="clock" id="clock">
+      <div class="hand hour" id="hHand"></div>
+      <div class="hand min" id="mHand"></div>
+      <div class="hand sec" id="sHand"></div>
+    </div>
+  </div>
+
+  <h1>反方向的钟</h1>
+  <p class="sub">听满一百遍 · 回到<b id="subHoliday">假日</b>前</p>
+
+  <p class="count-head">距离「<b id="headHoliday">假日</b>」还有</p>
+  <div class="count">
+    <div class="card"><div class="num" id="dNum">00</div><div class="lab">天</div></div>
+    <div class="card"><div class="num" id="hNum">00</div><div class="lab">时</div></div>
+    <div class="card"><div class="num" id="mNum">00</div><div class="lab">分</div></div>
+    <div class="card"><div class="num" id="sNum">00</div><div class="lab">秒</div></div>
+  </div>
+
+  <canvas id="eq"></canvas>
+
+  <div class="controls">
+    <button class="btn" id="muteBtn" type="button" aria-label="静音">
+      <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+      静音
+    </button>
+    <button class="btn" id="replayBtn" type="button" aria-label="再听一遍">
+      <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg>
+      再听一遍
+    </button>
+  </div>
+  <p class="meta">当前播放：《反方向的钟》 · 从 1 分 12 秒响起</p>
+</main>
+
+<!-- 入场遮罩 -->
+<div id="enter">
+  <div class="enter-vinyl"></div>
+  <div class="enter-title">反方向的钟</div>
+  <div class="enter-hint">轻触屏幕 · 让时光倒流</div>
+  <div class="enter-note">音乐将从 <b>1 分 12 秒</b> 开始 · 建议佩戴耳机<br>第 100 遍循环，即可回到节日之前</div>
+</div>
+
+<!-- 恭喜弹窗 -->
+<div id="pop">
+  <div class="pop-card">
+    <div class="crown">
+      <svg viewBox="0 0 24 24"><path d="M12 2l2.6 5.4 6 .8-4.4 4.2 1.1 5.9L12 15.8 6.7 18.3l1.1-5.9L3.4 8.2l6-.8L12 2z"/></svg>
+    </div>
+    <h2>恭喜你听了 100 遍<br>《反方向的钟》</h2>
+    <p>时光逆流成功<br>你回到了「<b id="popHoliday">假日</b>」前 <b id="popDays">0</b> 天</p>
+    <button class="btn-gold" id="popBtn" type="button">收下这份时光</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<audio id="audio" preload="auto" loop playsinline webkit-playsinline x5-playsinline>
+  <source src="assets/track.mp3" type="audio/mpeg">
+  <source src="assets/track.flac" type="audio/flac">
+</audio>
+
+<script>
+/* ================= 配置区（按需修改） ================= */
+const CONFIG = {
+  audioStartTime: 72,      // 音乐从 1 分 12 秒 = 72 秒开始
+  autoplay: true,          // 尝试自动播放（被浏览器拦截时会出现点击进入页）
+  // 手动指定节日（留 null 则自动选择最近的节假日）
+  manualHoliday: null,     // 例：{ name:'国庆节', date:'2026-10-01' }
+  holidays: [              // 节假日清单，会自动选最近的
+    { name:'中秋节', date:'2026-09-25' },
+    { name:'国庆节', date:'2026-10-01' },
+    { name:'元旦',   date:'2027-01-01' },
+    { name:'春节',   date:'2027-02-06' },
+    { name:'劳动节', date:'2027-05-01' },
+    { name:'中秋节', date:'2027-09-15' },
+    { name:'国庆节', date:'2027-10-01' }
+  ]
+};
+/* ==================================================== */
+
+const $ = id => document.getElementById(id);
+const DAY = 86400000;
+const state = { started:false, popupShown:false, vizReady:false, target:null };
+
+/* ---------- 节日选择 ---------- */
+function pickHoliday(){
+  if(CONFIG.manualHoliday){
+    const t = new Date(CONFIG.manualHoliday.date + 'T00:00:00').getTime();
+    return { name:CONFIG.manualHoliday.name, t };
+  }
+  const now = Date.now();
+  let best = null;
+  for(const h of CONFIG.holidays){
+    const t = new Date(h.date + 'T00:00:00').getTime();
+    if(t > now && (!best || t < best.t)) best = { name:h.name, t };
+  }
+  return best || { name:'假期', t: Date.now() + 90*DAY };
+}
+state.target = pickHoliday();
+
+/* ---------- 时钟刻度 ---------- */
+(function(){
+  const clock = $('clock');
+  for(let i=1;i<=12;i++){
+    const s = document.createElement('span');
+    s.className = 'num';
+    s.textContent = i;
+    const a = i*30*Math.PI/180, r = 39;
+    s.style.left = (50 + r*Math.sin(a)) + '%';
+    s.style.top  = (50 - r*Math.cos(a)) + '%';
+    clock.appendChild(s);
+  }
+})();
+
+/* ---------- 倒计时 + 反向时钟 ---------- */
+function pad(n){ return String(n).padStart(2,'0'); }
+function tick(){
+  let diff = state.target.t - Date.now();
+  if(diff < 0){ state.target = pickHoliday(); diff = state.target.t - Date.now(); renderHoliday(); }
+  const d = Math.floor(diff/DAY);
+  const h = Math.floor(diff%DAY/3600000);
+  const m = Math.floor(diff%3600000/60000);
+  const s = Math.floor(diff%60000/1000);
+  $('dNum').textContent = pad(d);
+  $('hNum').textContent = pad(h);
+  $('mNum').textContent = pad(m);
+  $('sNum').textContent = pad(s);
+  // 指针反向旋转（负数角度 = 逆时针）
+  $('sHand').style.transform = 'translateX(-50%) rotate(' + (-s*6) + 'deg)';
+  $('mHand').style.transform = 'translateX(-50%) rotate(' + (-(m*6 + s*0.1)) + 'deg)';
+  $('hHand').style.transform = 'translateX(-50%) rotate(' + (-((h%12)*30 + m*0.5)) + 'deg)';
+}
+function renderHoliday(){
+  $('subHoliday').textContent = state.target.name;
+  $('headHoliday').textContent = state.target.name;
+  $('popHoliday').textContent = state.target.name;
+}
+renderHoliday();
+tick();
+setInterval(tick, 1000);
+
+/* ---------- 音频 ---------- */
+const audio = $('audio');
+audio.addEventListener('loadedmetadata', () => { audio.currentTime = CONFIG.audioStartTime; });
+audio.addEventListener('error', () => {
+  toast('音频加载失败，请检查网络后刷新页面');
+});
+function playMusic(){
+  return new Promise((resolve) => {
+    audio.currentTime = CONFIG.audioStartTime;
+    audio.play().then(() => resolve(true)).catch(() => resolve(false));
+  });
+}
+function onStarted(){
+  state.started = true;
+  $('enter').classList.add('gone');
+  initVisualizer();
+  if(!state.popupShown){
+    state.popupShown = true;
+    setTimeout(() => $('pop').classList.add('show'), 1400);
+  }
+}
+
+/* ---------- 入场 / 自动播放 ---------- */
+const enter = $('enter');
+function tryStart(forced){
+  playMusic().then(ok => {
+    // forced=true 表示用户主动点击进入：无论音频是否成功都进入主界面
+    if(ok || forced){
+      onStarted();
+      if(!ok) toast('音乐播放失败，倒计时仍可正常使用');
+    }
+    // 自动播放被浏览器拦截时（!ok && !forced）停留在入场页等待点击
+  });
+}
+enter.addEventListener('click', () => tryStart(true));
+document.addEventListener('keydown', e => {
+  if((e.key==='Enter'||e.key===' ') && !state.started) tryStart(true);
+});
+if(CONFIG.autoplay) tryStart(false);   // 尝试自动播放；被拦截则停留在入场页
+
+/* ---------- 频谱可视化 ---------- */
+const canvas = $('eq'), ctx = canvas.getContext('2d');
+let analyser = null, freq = null, rafId = null;
+function sizeCanvas(){
+  const dpr = window.devicePixelRatio||1;
+  canvas.width = canvas.clientWidth*dpr;
+  canvas.height = canvas.clientHeight*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize', sizeCanvas);
+sizeCanvas();
+
+function initVisualizer(){
+  if(state.vizReady) return;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    const ac = new AC();
+    const src = ac.createMediaElementSource(audio);
+    analyser = ac.createAnalyser();
+    analyser.fftSize = 128;
+    freq = new Uint8Array(analyser.frequencyBinCount);
+    src.connect(analyser);
+    analyser.connect(ac.destination);
+  }catch(e){ analyser = null; }
+  state.vizReady = true;
+  if(!rafId) draw();
+}
+function draw(t){
+  rafId = requestAnimationFrame(draw);
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  ctx.clearRect(0,0,w,h);
+  const n = 28, gap = 4;
+  const bw = (w - gap*(n-1))/n;
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,'#f0c96a'); grad.addColorStop(1,'#b7a4ff');
+  ctx.fillStyle = grad;
+  const now = t || performance.now();
+  for(let i=0;i<n;i++){
+    let v;
+    if(freq){
+      const idx = Math.floor(i*freq.length/n);
+      v = freq[idx]/255;
+    }else{
+      v = (Math.sin(i*.55 + now*.004) + 1)/2 * (0.35 + 0.65*Math.abs(Math.sin(now*.0021 + i)));
+    }
+    const bh = Math.max(3, v*h);
+    ctx.globalAlpha = .35 + v*.65;
+    ctx.fillRect(i*(bw+gap), h-bh, bw, bh);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- 控制按钮 ---------- */
+$('muteBtn').addEventListener('click', () => {
+  audio.muted = !audio.muted;
+  $('muteBtn').innerHTML = audio.muted
+    ? '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm14 3l3-3 1.4 1.4-3 3 3 3L20 17.8l-3-3-3 3-1.4-1.4 3-3-3-3L14 9l3 3z"/></svg>已静音'
+    : '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>静音';
+});
+$('replayBtn').addEventListener('click', () => {
+  audio.currentTime = CONFIG.audioStartTime;
+  playMusic().then(ok => { if(ok) toast('已回到 1 分 12 秒，重新开始'); });
+});
+$('popBtn').addEventListener('click', () => $('pop').classList.remove('show'));
+
+/* ---------- 弹窗文案 ---------- */
+$('popDays').textContent = Math.max(0, Math.floor((state.target.t - Date.now())/DAY));
+
+/* ---------- Toast ---------- */
+let toastTimer = null;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>
