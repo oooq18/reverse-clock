@@ -406,18 +406,21 @@ function onStarted(){
 }
 
 /* ---------- 播放触发 ---------- */
-function tryStart(){
+function tryStart(forced){
   playFromStart().then(ok => {
-    if(ok){ onStarted(); }
+    if(ok || forced){
+      onStarted();
+      if(!ok) toast('音乐播放失败，请检查网络后刷新');
+    }
     else if(!state.started){ toast('点击页面任意位置开始播放'); }
   });
 }
-document.addEventListener('click', () => { if(!state.started) tryStart(); });
+document.addEventListener('click', () => { if(!state.started) tryStart(true); });
 document.addEventListener('keydown', e => {
-  if((e.key==='Enter'||e.key===' ') && !state.started) tryStart();
+  if((e.key==='Enter'||e.key===' ') && !state.started) tryStart(true);
 });
 // 一打开网页立即尝试自动播放（浏览器有声自动播放可能被拦截，点击页面任意位置即可开始）
-if(CONFIG.autoplay) tryStart();
+if(CONFIG.autoplay) tryStart(false);
 
 /* ---------- 控制按钮 ---------- */
 $('muteBtn').addEventListener('click', () => {
