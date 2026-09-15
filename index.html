@@ -323,10 +323,7 @@ audio{display:none}
 
 <div id="toast"></div>
 
-<audio id="audio" preload="auto" playsinline webkit-playsinline x5-playsinline>
-  <source src="assets/track.mp3" type="audio/mpeg">
-  <source src="assets/track.flac" type="audio/flac">
-</audio>
+<audio id="audio" playsinline webkit-playsinline x5-playsinline></audio>
 
 <script>
 /* ================= 配置区（按需修改） ================= */
@@ -394,7 +391,15 @@ setInterval(tick, 1000);
 
 /* ---------- 音频 ---------- */
 const audio = $('audio');
+const SRC = 'assets/track.mp3';
 audio.addEventListener('error', () => { toast('音频加载失败，请检查网络后刷新页面'); });
+// 全量下载为 Blob 再播放：seek 到 1 分 12 秒即时生效、不受网络流式加载影响；失败时回退流式源
+function prepareAudio(){
+  fetch(SRC).then(r => { if(!r.ok) throw new Error('bad'); return r.blob(); })
+    .then(blob => { audio.src = URL.createObjectURL(blob); })
+    .catch(() => { audio.src = SRC; });
+}
+prepareAudio();
 // 每次循环结束都回到 1 分 12 秒重新开始（先播放再定位，seek 稳定生效）
 audio.addEventListener('ended', () => {
   audio.play().then(() => { audio.currentTime = CONFIG.audioStartTime; }).catch(() => {});
