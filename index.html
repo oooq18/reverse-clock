@@ -126,11 +126,8 @@ h1{
 }
 .ritual b{color:var(--gold);font-weight:600;white-space:nowrap}
 
-/* ============ 反向钟 + 倒计时 ============ */
-.timer{display:flex;align-items:center;gap:clamp(22px,4vw,44px);margin-top:clamp(26px,4.6vh,44px)}
-.revclock{width:64px;height:64px;flex:none;opacity:.9}
-.revclock circle,.revclock line{fill:none;stroke:var(--gold);stroke-width:1}
-.revclock .h{stroke:var(--ink)}
+/* ============ 倒计时 ============ */
+.timer{display:flex;justify-content:center;margin-top:clamp(26px,4.6vh,44px)}
 .cd{display:flex;align-items:flex-start;gap:0}
 .cd .cell{display:flex;flex-direction:column;align-items:center;min-width:clamp(52px,9vw,84px)}
 .cd .cell + .cell{border-left:1px solid var(--line-soft);padding-left:clamp(8px,1.6vw,20px)}
@@ -243,7 +240,6 @@ audio{display:none}
   .main{padding-top:clamp(96px,18vh,140px)}
   .ritual{flex-direction:column;gap:4px;padding:12px 18px}
   .timer{gap:16px;margin-top:26px}
-  .revclock{width:48px;height:48px}
   .cd .cell{min-width:44px}
   .cd .cell + .cell{padding-left:10px}
   #enter{white-space:normal;text-align:center;max-width:88vw;line-height:1.8;letter-spacing:.2em;text-indent:.2em}
@@ -282,13 +278,6 @@ audio{display:none}
   </div>
 
   <div class="timer">
-    <svg class="revclock" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="30"/>
-      <circle cx="32" cy="32" r="1.4" class="h"/>
-      <line class="h" id="hHand" x1="32" y1="32" x2="32" y2="20" style="transform-origin:32px 32px"/>
-      <line class="h" id="mHand" x1="32" y1="32" x2="32" y2="12" style="transform-origin:32px 32px"/>
-      <line id="sHand" x1="32" y1="32" x2="32" y2="6" style="transform-origin:32px 32px"/>
-    </svg>
     <div class="cd-wrap">
       <div class="cd">
         <div class="cell"><div class="num" id="dNum">00</div><div class="lab">天</div></div>
@@ -334,7 +323,7 @@ audio{display:none}
 
 <div id="toast"></div>
 
-<audio id="audio" preload="auto" loop playsinline webkit-playsinline x5-playsinline>
+<audio id="audio" preload="auto" playsinline webkit-playsinline x5-playsinline>
   <source src="assets/track.mp3" type="audio/mpeg">
   <source src="assets/track.flac" type="audio/flac">
 </audio>
@@ -377,11 +366,8 @@ function pickHoliday(){
 }
 state.target = pickHoliday();
 
-/* ---------- 倒计时 + 反向时钟 ---------- */
+/* ---------- 倒计时 ---------- */
 function pad(n){ return String(n).padStart(2,'0'); }
-function setHand(id, deg){
-  $(id).setAttribute('transform', 'rotate(' + deg + ' 32 32)');
-}
 function tick(){
   let diff = state.target.t - Date.now();
   if(diff < 0){ state.target = pickHoliday(); diff = state.target.t - Date.now(); renderHoliday(); }
@@ -393,10 +379,6 @@ function tick(){
   $('hNum').textContent = pad(h);
   $('mNum').textContent = pad(m);
   $('sNum').textContent = pad(s);
-  // 指针反向（负角度 = 逆时针）
-  setHand('sHand', -s*6);
-  setHand('mHand', -(m*6 + s*0.1));
-  setHand('hHand', -((h%12)*30 + m*0.5));
 }
 function renderHoliday(){
   const days = Math.max(0, Math.floor((state.target.t - Date.now())/DAY));
@@ -412,12 +394,24 @@ setInterval(tick, 1000);
 
 /* ---------- 音频 ---------- */
 const audio = $('audio');
-audio.addEventListener('loadedmetadata', () => { audio.currentTime = CONFIG.audioStartTime; });
 audio.addEventListener('error', () => { toast('音频加载失败，请检查网络后刷新页面'); });
-function playMusic(){
+// 每次循环结束都回到 1 分 12 秒重新开始（先播放再定位，seek 稳定生效）
+audio.addEventListener('ended', () => {
+  audio.play().then(() => { audio.currentTime = CONFIG.audioStartTime; }).catch(() => {});
+});
+// 从 1 分 12 秒开始播放：先 play 再 seek，避免 seek 未完成导致从 0 秒起播
+function playFromStart(){
   return new Promise((resolve) => {
-    audio.currentTime = CONFIG.audioStartTime;
-    audio.play().then(() => resolve(true)).catch(() => resolve(false));
+    const tryPlay = () => {
+      try{
+        audio.play().then(() => {
+          audio.currentTime = CONFIG.audioStartTime;
+          resolve(true);
+        }).catch(() => resolve(false));
+      }catch(e){ resolve(false); }
+    };
+    if(audio.readyState >= 1) tryPlay();
+    else audio.addEventListener('loadedmetadata', tryPlay, { once:true });
   });
 }
 function onStarted(){
@@ -432,7 +426,7 @@ function onStarted(){
 /* ---------- 播放触发 ---------- */
 const enter = $('enter');
 function tryStart(forced){
-  playMusic().then(ok => {
+  playFromStart().then(ok => {
     if(ok || forced){
       onStarted();
       if(!ok) toast('音乐播放失败，倒计时仍可正常使用');
@@ -444,6 +438,7 @@ document.addEventListener('click', () => { if(!state.started) tryStart(true); })
 document.addEventListener('keydown', e => {
   if((e.key==='Enter'||e.key===' ') && !state.started) tryStart(true);
 });
+// 一打开网页立即尝试播放；被浏览器拦截时底部会出现轻触提示
 if(CONFIG.autoplay) tryStart(false);
 
 /* ---------- 控制按钮 ---------- */
@@ -455,7 +450,7 @@ $('muteBtn').addEventListener('click', () => {
 });
 $('replayBtn').addEventListener('click', () => {
   audio.currentTime = CONFIG.audioStartTime;
-  playMusic().then(ok => { if(ok) toast('已回到 1 分 12 秒，重新开始'); });
+  playFromStart().then(ok => { if(ok) toast('已回到 1 分 12 秒，重新开始'); });
 });
 $('popBtn').addEventListener('click', () => $('pop').classList.remove('show'));
 
