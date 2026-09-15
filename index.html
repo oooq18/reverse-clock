@@ -50,7 +50,7 @@ body::after{
 
 /* ============ 封面掉落 · 画廊 ============ */
 .frames{position:fixed;inset:0;z-index:3;pointer-events:none}
-.frame{position:absolute;top:-36%;opacity:0;will-change:transform;animation:fall 1.25s cubic-bezier(.23,.9,.3,1) forwards}
+.frame{position:absolute;top:-36%;opacity:0;will-change:transform;animation:fall 1.6s cubic-bezier(.22,1,.36,1) forwards}
 .frame .card{
   background:#f7f4ec;padding:clamp(5px,0.6vw,9px);
   box-shadow:0 30px 70px rgba(0,0,0,.6), 0 2px 0 rgba(255,255,255,.06) inset;
@@ -69,9 +69,7 @@ body::after{
 .frame.hot{z-index:8}
 @keyframes fall{
   0%  {transform:translateY(-74vh) rotate(var(--r,0deg));opacity:0}
-  58% {opacity:1}
-  76% {transform:translateY(16px) rotate(var(--r,0deg));opacity:1}
-  87% {transform:translateY(-9px) rotate(var(--r,0deg));opacity:1}
+  35% {opacity:1}
   100%{transform:translateY(0) rotate(var(--r,0deg));opacity:1}
 }
 /* 位置与尺寸（桌面基准） */
@@ -161,19 +159,6 @@ h1{
 .btn svg{width:13px;height:13px;fill:currentColor}
 .meta{font-size:10px;letter-spacing:.3em;color:#5d5666}
 
-/* ============ 入场提示条 ============ */
-#enter{
-  position:fixed;left:50%;bottom:clamp(18px,4vh,40px);transform:translateX(-50%);
-  z-index:30;display:flex;align-items:center;gap:12px;
-  border:1px solid var(--line);background:rgba(11,11,14,.72);backdrop-filter:blur(6px);
-  color:var(--ink);font-size:13px;letter-spacing:.3em;text-indent:.3em;
-  padding:14px 30px;cursor:pointer;transition:opacity .6s,transform .6s;
-  white-space:nowrap;
-}
-#enter .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold);animation:pulse 2s ease-in-out infinite;text-indent:0}
-#enter.gone{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(16px)}
-@keyframes pulse{50%{opacity:.3}}
-
 /* ============ 恭喜弹窗 ============ */
 #pop{
   position:fixed;inset:0;z-index:40;
@@ -242,7 +227,6 @@ audio{display:none}
   .timer{gap:16px;margin-top:26px}
   .cd .cell{min-width:44px}
   .cd .cell + .cell{padding-left:10px}
-  #enter{white-space:normal;text-align:center;max-width:88vw;line-height:1.8;letter-spacing:.2em;text-indent:.2em}
 }
 @media (prefers-reduced-motion:reduce){
   .frame{animation-duration:1.9s}
@@ -300,15 +284,9 @@ audio{display:none}
         再听一遍
       </button>
     </div>
-    <div class="meta">《反方向的钟》· 从 1 分 12 秒响起</div>
+    <div class="meta">《反方向的钟》· 从 1 分 11 秒响起</div>
   </div>
 </main>
-
-<!-- 入场提示条 -->
-<div id="enter">
-  <span class="dot"></span>
-  <span>轻触屏幕 · 播放《反方向的钟》</span>
-</div>
 
 <!-- 恭喜弹窗 -->
 <div id="pop">
@@ -328,8 +306,8 @@ audio{display:none}
 <script>
 /* ================= 配置区（按需修改） ================= */
 const CONFIG = {
-  audioStartTime: 72,      // 音乐从 1 分 12 秒 = 72 秒开始
-  autoplay: true,          // 尝试自动播放（被浏览器拦截时出现底部轻触提示）
+  audioStartTime: 71,      // 音乐从 1 分 11 秒 = 71 秒开始
+  autoplay: true,          // 一打开网页即尝试自动播放（被浏览器拦截时，点击页面任意位置即可开始）
   manualHoliday: null,     // 手动指定节日，例：{ name:'国庆节', date:'2026-10-01' }
   holidays: [              // 节假日清单，自动选择最近的未来节日
     { name:'中秋节', date:'2026-09-25' },
@@ -393,18 +371,18 @@ setInterval(tick, 1000);
 const audio = $('audio');
 const SRC = 'assets/track.mp3';
 audio.addEventListener('error', () => { toast('音频加载失败，请检查网络后刷新页面'); });
-// 全量下载为 Blob 再播放：seek 到 1 分 12 秒即时生效、不受网络流式加载影响；失败时回退流式源
+// 全量下载为 Blob 再播放：seek 到 1 分 11 秒即时生效、不受网络流式加载影响；失败时回退流式源
 function prepareAudio(){
   fetch(SRC).then(r => { if(!r.ok) throw new Error('bad'); return r.blob(); })
     .then(blob => { audio.src = URL.createObjectURL(blob); })
     .catch(() => { audio.src = SRC; });
 }
 prepareAudio();
-// 每次循环结束都回到 1 分 12 秒重新开始（先播放再定位，seek 稳定生效）
+// 每次循环结束都回到 1 分 11 秒重新开始（先播放再定位，seek 稳定生效）
 audio.addEventListener('ended', () => {
   audio.play().then(() => { audio.currentTime = CONFIG.audioStartTime; }).catch(() => {});
 });
-// 从 1 分 12 秒开始播放：先 play 再 seek，避免 seek 未完成导致从 0 秒起播
+// 从 1 分 11 秒开始播放：先 play 再 seek，避免 seek 未完成导致从 0 秒起播
 function playFromStart(){
   return new Promise((resolve) => {
     const tryPlay = () => {
@@ -421,7 +399,6 @@ function playFromStart(){
 }
 function onStarted(){
   state.started = true;
-  $('enter').classList.add('gone');
   if(!state.popupShown){
     state.popupShown = true;
     setTimeout(() => $('pop').classList.add('show'), 1300);
@@ -429,22 +406,18 @@ function onStarted(){
 }
 
 /* ---------- 播放触发 ---------- */
-const enter = $('enter');
-function tryStart(forced){
+function tryStart(){
   playFromStart().then(ok => {
-    if(ok || forced){
-      onStarted();
-      if(!ok) toast('音乐播放失败，倒计时仍可正常使用');
-    }
+    if(ok){ onStarted(); }
+    else if(!state.started){ toast('点击页面任意位置开始播放'); }
   });
 }
-enter.addEventListener('click', () => tryStart(true));
-document.addEventListener('click', () => { if(!state.started) tryStart(true); });
+document.addEventListener('click', () => { if(!state.started) tryStart(); });
 document.addEventListener('keydown', e => {
-  if((e.key==='Enter'||e.key===' ') && !state.started) tryStart(true);
+  if((e.key==='Enter'||e.key===' ') && !state.started) tryStart();
 });
-// 一打开网页立即尝试播放；被浏览器拦截时底部会出现轻触提示
-if(CONFIG.autoplay) tryStart(false);
+// 一打开网页立即尝试自动播放（浏览器有声自动播放可能被拦截，点击页面任意位置即可开始）
+if(CONFIG.autoplay) tryStart();
 
 /* ---------- 控制按钮 ---------- */
 $('muteBtn').addEventListener('click', () => {
@@ -455,7 +428,7 @@ $('muteBtn').addEventListener('click', () => {
 });
 $('replayBtn').addEventListener('click', () => {
   audio.currentTime = CONFIG.audioStartTime;
-  playFromStart().then(ok => { if(ok) toast('已回到 1 分 12 秒，重新开始'); });
+  playFromStart().then(ok => { if(ok) toast('已回到 1 分 11 秒，重新开始'); });
 });
 $('popBtn').addEventListener('click', () => $('pop').classList.remove('show'));
 
