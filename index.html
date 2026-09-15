@@ -306,7 +306,7 @@ audio{display:none}
 <script>
 /* ================= 配置区（按需修改） ================= */
 const CONFIG = {
-  audioStartTime: 71,      // 音乐从 1 分 11 秒 = 71 秒开始
+  audioStartTime: 0,       // 音频文件已裁剪为从 1 分 11 秒开始，播放起点即 1:11，任何设备都精确
   autoplay: true,          // 一打开网页即尝试自动播放（被浏览器拦截时，点击页面任意位置即可开始）
   manualHoliday: null,     // 手动指定节日，例：{ name:'国庆节', date:'2026-10-01' }
   holidays: [              // 节假日清单，自动选择最近的未来节日
@@ -371,7 +371,7 @@ setInterval(tick, 1000);
 const audio = $('audio');
 const SRC = 'assets/track.mp3';
 audio.addEventListener('error', () => { toast('音频加载失败，请检查网络后刷新页面'); });
-// 全量下载为 Blob 再播放：seek 到 1 分 11 秒即时生效、不受网络流式加载影响；12 秒超时自动回退流式源
+// 全量下载为 Blob 再播放：音频已裁剪为从 1 分 11 秒开始，播放起点精确；12 秒超时自动回退流式源
 function prepareAudio(){
   const fail = () => { audio.src = SRC; };
   const timer = setTimeout(fail, 12000);
@@ -380,11 +380,11 @@ function prepareAudio(){
     .catch(() => { clearTimeout(timer); fail(); });
 }
 prepareAudio();
-// 每次循环结束都回到 1 分 11 秒重新开始（先播放再定位，seek 稳定生效）
+// 每次循环结束都回到开头（即 1 分 11 秒）重新播放
 audio.addEventListener('ended', () => {
   audio.play().then(() => { audio.currentTime = CONFIG.audioStartTime; }).catch(() => {});
 });
-// 从 1 分 11 秒开始播放：先 play 再 seek，避免 seek 未完成导致从 0 秒起播
+// 播放起点即 1 分 11 秒（文件已裁剪到该位置），不依赖 seek 精度
 function playFromStart(){
   return new Promise((resolve) => {
     const tryPlay = () => {
@@ -420,6 +420,7 @@ function tryStart(forced){
   });
 }
 document.addEventListener('click', () => { if(!state.started) tryStart(true); });
+document.addEventListener('touchstart', () => { if(!state.started) tryStart(true); }, { passive:true });
 document.addEventListener('keydown', e => {
   if((e.key==='Enter'||e.key===' ') && !state.started) tryStart(true);
 });
